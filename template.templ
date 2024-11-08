@@ -1,0 +1,36 @@
+package main
+
+import "time"
+
+templ index(endpoints []Endpoint) {
+	<html>
+		<head>
+			<title>Gatewayd</title>
+			<style>
+				li.me {
+					background-color: hsl(170, 100%, 32%);
+				}
+			</style>
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/htmx/2.0.3/htmx.min.js" integrity="sha512-dQu3OKLMpRu85mW24LA1CUZG67BgLPR8Px3mcxmpdyijgl1UpCM1RtJoQP6h8UkufSnaHVRTUx98EQT9fcKohw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+		</head>
+		<body>
+			@endpoint_list(endpoints)
+		</body>
+	</html>
+}
+
+templ endpoint_list(endpoints []Endpoint) {
+	<ul>
+		{{ now := time.Now() }}
+		for _, endpoint := range endpoints {
+			<li class={templ.KV("me", endpoint.IsMe)}>
+				{ endpoint.IP } - { endpoint.Hostname } - { endpoint.MAC } - { now.Sub(endpoint.LastDHCP).String() }ago
+				if endpoint.IsFan {
+					<button hx-post={"/unfan/"+endpoint.IP} hx-target="body">不翻</button>
+				} else {
+					<button hx-post={"/fan/"+endpoint.IP} hx-target="body">翻</button>
+				}
+			</li>
+		}
+	</ul>
+}
