@@ -16,12 +16,12 @@ import (
 )
 
 type Endpoint struct {
-	LastDHCP time.Time
-	IP       string
-	MAC      string
-	Hostname string
-	IsFan    bool
-	IsMe     bool
+	DHCPExpiry time.Time
+	IP         string
+	MAC        string
+	Hostname   string
+	IsFan      bool
+	IsMe       bool
 }
 
 func getFanMembers() (ret map[string]struct{}, err error) {
@@ -61,10 +61,10 @@ func parseEndpoints(clientIP string) (ret []Endpoint) {
 		if len(parts) >= 5 {
 			dhcpTime, _ := strconv.ParseInt(parts[0], 10, 64)
 			ret = append(ret, Endpoint{
-				LastDHCP: time.Unix(dhcpTime, 0),
-				MAC:      parts[1],
-				IP:       parts[2],
-				Hostname: parts[3],
+				DHCPExpiry: time.Unix(dhcpTime, 0).UTC(),
+				MAC:        parts[1],
+				IP:         parts[2],
+				Hostname:   parts[3],
 			})
 		}
 	}
@@ -82,15 +82,7 @@ func parseEndpoints(clientIP string) (ret []Endpoint) {
 }
 
 func renderIndex(c *gin.Context) {
-	endpoints := parseEndpoints(c.ClientIP())
-	fan := false
-	for _, endpoint := range endpoints {
-		if endpoint.IP == c.ClientIP() {
-			fan = endpoint.IsFan
-			break
-		}
-	}
-	c.HTML(http.StatusOK, "", index(endpoints, fan))
+	c.HTML(http.StatusOK, "", index(parseEndpoints(c.ClientIP())))
 }
 
 func main() {

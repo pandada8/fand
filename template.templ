@@ -21,10 +21,9 @@ templ index(endpoints []Endpoint) {
 
 templ endpoint_list(endpoints []Endpoint) {
 	<ul>
-		{{ now := time.Now() }}
 		for _, endpoint := range endpoints {
 			<li class={templ.KV("me", endpoint.IsMe)}>
-				{ endpoint.IP } - { endpoint.Hostname } - { endpoint.MAC } - { now.Sub(endpoint.LastDHCP).String() }ago
+				{ endpoint.IP } - { endpoint.Hostname } - { endpoint.MAC }
 				if endpoint.IsFan {
 					<button hx-post={"/unfan/"+endpoint.IP} hx-target="body">不翻</button>
 				} else {
